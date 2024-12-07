@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPattern": "/users/.*"
+  },
+  "response": {
+    "status": 200,
+    "body": "{ \"id\": \"123\", \"name\": \"John Doe\", \"email\": \"john.doe@example.com\" }",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

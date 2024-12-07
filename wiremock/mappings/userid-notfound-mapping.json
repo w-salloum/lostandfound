@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPattern": "/users/*"
+  },
+  "response": {
+    "status": 404,
+    "body": "{\"error\":\"User not found\"}",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
