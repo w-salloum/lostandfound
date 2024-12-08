@@ -1,0 +1,22 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/users/query",
+    "bodyPatterns": [
+      {
+        "equalToJson": "{ \"ids\": [123] }",
+        "ignoreArrayOrder": true,
+        "ignoreExtraElements": true
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "body": "[ { \"id\": 123, \"name\": \"John Doe\" } ]",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  },
+
+  "priority": 3
+}

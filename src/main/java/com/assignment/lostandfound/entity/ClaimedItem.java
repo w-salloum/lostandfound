@@ -3,22 +3,22 @@ package com.assignment.lostandfound.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Data
-@Table(name = "lost_items")
-public class LostItem {
+@Table(name = "claimed_items")
+public class ClaimedItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "item_id")
-    private Item item;
+    @JoinColumn(name = "lost_item_id")
+    private LostItem lostItem;
 
-    @ManyToOne
-    @JoinColumn(name = "place_id")
-    private Place place;
-
+    private Long userId;
     private int quantity;
-    private int claimedQuantity;
+    LocalDateTime claimedAt;
+
 }

@@ -1,6 +1,8 @@
 package com.assignment.lostandfound.api;
 
+import com.assignment.lostandfound.dto.ClaimedItemDto;
 import com.assignment.lostandfound.dto.LostItemDto;
+import com.assignment.lostandfound.service.ClaimedItemService;
 import com.assignment.lostandfound.service.LostItemService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,30 +15,40 @@ import java.util.List;
 public class LostItemController {
 
     private final LostItemService lostItemService;
+    private final ClaimedItemService claimedItemService;
 
-    public LostItemController(LostItemService lostItemService) {
+    public LostItemController(LostItemService lostItemService, ClaimedItemService claimedItemService) {
         this.lostItemService = lostItemService;
+        this.claimedItemService = claimedItemService;
     }
 
     @GetMapping
-    public List<LostItemDto> getLostItems() {
-        return this.lostItemService.getLostItems();
+    public ResponseEntity<List<LostItemDto>> getLostItems() {
+        List<LostItemDto> lostItems = this.lostItemService.getLostItems();
+        return ResponseEntity.ok(lostItems);
     }
 
-    @PostMapping
-    public void postLostItem() {
-        LostItemDto lostItem = LostItemDto
-                .builder()
-                .place("location")
-                .name("name")
-                .quantity(1)
-                .build();
-         this.lostItemService.saveLostItem(lostItem);
-    }
+ /*   @PostMapping
+    public ResponseEntity<String> postLostItem(@RequestBody LostItemDto lostItemDto) {
+        this.lostItemService.saveLostItem(lostItemDto);
+        return ResponseEntity.ok("Lost item saved successfully.");
+    }*/
 
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadPdf(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
         int totalItems = this.lostItemService.uploadFile(file);
         return ResponseEntity.ok("File uploaded successfully. Total items: " + totalItems);
+    }
+
+    @PostMapping("/{lostItemId}/claim/{userId}/{quantity}")
+    public ResponseEntity<String> claimLostItem(@PathVariable Long lostItemId, @PathVariable Long userId, @PathVariable int quantity) {
+        this.lostItemService.claimLostItem(lostItemId, userId, quantity);
+        return ResponseEntity.ok("Claim successful for user " + userId + " with quantity " + quantity);
+    }
+
+    @GetMapping("/{lostItemId}/claimed-items")
+    public ResponseEntity<List<ClaimedItemDto>> getClaimedItems(@PathVariable Long lostItemId) {
+        List<ClaimedItemDto> claimedItems = this.claimedItemService.getClaimedItems(lostItemId);
+        return ResponseEntity.ok(claimedItems);
     }
 }

@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "GET",
-    "urlPattern": "/users/.*"
+    "urlPattern": "/users/123"
   },
   "response": {
     "status": 200,
@@ -9,5 +9,6 @@
     "headers": {
       "Content-Type": "application/json"
     }
-  }
+  },
+  "priority": 1
 }
