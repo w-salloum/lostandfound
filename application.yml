@@ -22,3 +22,5 @@ spring:
 external:
   api:
     base-url: http://localhost:8081 # Point to the WireMock container
+user-service:
+  url: http://localhost:8081/

@@ -28,12 +28,6 @@ public class LostItemController {
         return ResponseEntity.ok(lostItems);
     }
 
- /*   @PostMapping
-    public ResponseEntity<String> postLostItem(@RequestBody LostItemDto lostItemDto) {
-        this.lostItemService.saveLostItem(lostItemDto);
-        return ResponseEntity.ok("Lost item saved successfully.");
-    }*/
-
     @PostMapping("/upload")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
         int totalItems = this.lostItemService.uploadFile(file);
