@@ -7,8 +7,8 @@ import com.assignment.lostandfound.entity.LostItem;
 import com.assignment.lostandfound.entity.Place;
 import com.assignment.lostandfound.exception.InvalidPDFContentException;
 import com.assignment.lostandfound.exception.InvalidRequestException;
-import com.assignment.lostandfound.exception.UnsupportedFileTypeException;
 import com.assignment.lostandfound.exception.NotFoundException;
+import com.assignment.lostandfound.exception.UnsupportedFileTypeException;
 import com.assignment.lostandfound.mapper.LostItemMapper;
 import com.assignment.lostandfound.reader.FileReader;
 import com.assignment.lostandfound.reader.PDFFileReader;
@@ -82,6 +82,8 @@ public class LostItemService {
     public int uploadFile(MultipartFile file) {
         validateFile(file);
         try (var inputStream = file.getInputStream()) {
+            // get the appropriate file reader based on the file type
+            // then start processing the file
             return getFileReader(file.getOriginalFilename()).processFile(inputStream);
         } catch (IOException e) {
             throw new InvalidPDFContentException("Error reading file: " + e.getMessage());
@@ -103,6 +105,7 @@ public class LostItemService {
 
     @Transactional
     public void claimLostItem(Long lostItemId, Long userId, int quantity) {
+        // validation
         LostItem lostItem = lostItemRepository.findById(lostItemId)
                 .orElseThrow(() -> new NotFoundException(ITEM_NOT_FOUND_MSG + lostItemId));
 
@@ -114,6 +117,8 @@ public class LostItemService {
             throw new InvalidRequestException(INVALID_QUANTITY_MSG + quantity);
         }
 
+        // increment claimed quantity and save claimed item
+        // used this field to keep track of claimed quantity, and prevent over-claiming
         lostItem.setClaimedQuantity(lostItem.getClaimedQuantity() + quantity);
 
         ClaimedItem claimedItem = new ClaimedItem();

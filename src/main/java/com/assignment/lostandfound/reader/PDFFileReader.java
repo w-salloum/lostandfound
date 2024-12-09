@@ -45,6 +45,7 @@ public class PDFFileReader implements FileReader {
         int totalPages = document.getNumberOfPages();
 
         try {
+            // Process each page of the PDF document
             for (int page = 1; page <= totalPages; page++) {
                 pdfStripper.setStartPage(page);
                 pdfStripper.setEndPage(page);

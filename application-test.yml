@@ -15,7 +15,9 @@ spring:
   sql:
     init:
       mode: always
-  logging:
-    level:
-      org.hibernate.SQL: DEBUG
-      org.hibernate.type.descriptor.sql: TRACE
+
+external:
+  api:
+    base-url: http://localhost:8081 # Point to the WireMock container
+user-service:
+  url: http://localhost:8081/
