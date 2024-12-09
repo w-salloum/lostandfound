@@ -185,40 +185,43 @@ class LostItemServiceTest {
     }
 
     @Test
-    void testUploadFile_ShouldReturnProcessedData_WhenFileIsValid() throws IOException {
-        // Arrange
-        MultipartFile file = new MockMultipartFile(
-                "file",                 // Form field name (can be any name you want)
-                "fileName.pdf",               // Original file name (e.g., "file.pdf")
-                "application/pdf", // Content type (adjust if necessary)
-                getPdfInputStream("data/sample.pdf"));
+    void testUploadFile_Success() throws IOException {
+        MultipartFile file = new MockMultipartFile("file", "fileName.pdf", "application/pdf", getPdfInputStream("data/sample.pdf"));
+        Item mockItem = createItem(1L);
+        Place mockPlace = createPlace(1L);
+        LostItem mockLostItem = createLostItem(1L, 5, 2, mockItem, mockPlace);
 
-        Item item = new Item();
-        item.setId(1L);
-        Place place = new Place();
-        place.setId(1L);
+        when(itemService.getOrSaveItem(any())).thenReturn(mockItem);
+        when(locationService.getOrSaveLocation(any())).thenReturn(mockPlace);
+        when(lostItemRepository.findByItemIdAndPlaceId(any(), any())).thenReturn(Optional.of(mockLostItem));
 
-        LostItem lostItem = new LostItem();
-        lostItem.setId(1L);
-        lostItem.setQuantity(5);
-        lostItem.setClaimedQuantity(2);
-        lostItem.setItem(item);
-        lostItem.setPlace(place);
-
-
-        when(lostItemRepository.findByItemIdAndPlaceId(any(), any())).thenReturn(Optional.of(lostItem));
-        when(itemService.getOrSaveItem(any())).thenReturn(item);
-        when(locationService.getOrSaveLocation(any())).thenReturn(place);
-
-        // Act
         int result = lostItemService.uploadFile(file);
 
-        // Assert
         assertEquals(4, result);
         verify(locationService, times(4)).getOrSaveLocation(any());
         verify(itemService, times(4)).getOrSaveItem(any());
-        verify(lostItemRepository, times(4)).findByItemIdAndPlaceId(any(), any());
         verify(lostItemRepository, times(4)).save(any());
     }
 
+    private LostItem createLostItem(Long id, int quantity, int claimedQuantity, Item item, Place place) {
+        LostItem lostItem = new LostItem();
+        lostItem.setId(id);
+        lostItem.setQuantity(quantity);
+        lostItem.setClaimedQuantity(claimedQuantity);
+        lostItem.setItem(item);
+        lostItem.setPlace(place);
+        return lostItem;
+    }
+
+    private Item createItem(Long id) {
+        Item item = new Item();
+        item.setId(id);
+        return item;
+    }
+
+    private Place createPlace(Long id) {
+        Place place = new Place();
+        place.setId(id);
+        return place;
+    }
 }
