@@ -32,4 +32,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUserServiceException(UserServiceException e) {
         return new ResponseEntity<>(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(InitializingPDFException.class)
+    public ResponseEntity<ErrorResponse> handleInitializingPDFException(InitializingPDFException e) {
+        return new ResponseEntity<>(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

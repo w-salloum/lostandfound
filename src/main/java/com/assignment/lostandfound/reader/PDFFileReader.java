@@ -1,6 +1,7 @@
 package com.assignment.lostandfound.reader;
 
 import com.assignment.lostandfound.dto.LostItemDto;
+import com.assignment.lostandfound.exception.InitializingPDFException;
 import com.assignment.lostandfound.exception.InvalidPDFContentException;
 import com.assignment.lostandfound.service.LostItemService;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -12,11 +13,24 @@ import java.io.LineNumberReader;
 import java.io.StringReader;
 
 public class PDFFileReader implements FileReader {
+
+    private static final String ITEM_NAME_PREFIX = "ItemName:";
+    private static final String QUANTITY_PREFIX = "Quantity:";
+    private static final String PLACE_PREFIX = "Place:";
+
     private final LostItemService lostItemService;
+    private final PDFTextStripper pdfStripper;
 
     public PDFFileReader(LostItemService lostItemService) {
         this.lostItemService = lostItemService;
+        try {
+            this.pdfStripper = new PDFTextStripper(); // Initialize once to reuse across pages
+        } catch (IOException e) {
+            throw new InitializingPDFException("Error initializing PDF reader: " + e.getMessage());
+        }
+
     }
+
     @Override
     public int processFile(InputStream inputStream) {
         try (PDDocument document = PDDocument.load(inputStream)) {
@@ -28,11 +42,9 @@ public class PDFFileReader implements FileReader {
 
     private int processPdf(PDDocument document) {
         int totalItems = 0;
+        int totalPages = document.getNumberOfPages();
 
         try {
-            PDFTextStripper pdfStripper = new PDFTextStripper();
-            int totalPages = document.getNumberOfPages();
-
             for (int page = 1; page <= totalPages; page++) {
                 pdfStripper.setStartPage(page);
                 pdfStripper.setEndPage(page);
@@ -54,9 +66,9 @@ public class PDFFileReader implements FileReader {
             String line;
             while ((line = lineReader.readLine()) != null) {
                 line = line.trim();
-                if (line.startsWith("ItemName:")) {
+                if (line.startsWith(ITEM_NAME_PREFIX)) {
                     LostItemDto lostItem = parseItem(lineReader, line);
-                    this.lostItemService.saveLostItem(lostItem);
+                    lostItemService.saveLostItem(lostItem);
                     totalItems++;
                 }
             }
@@ -69,7 +81,7 @@ public class PDFFileReader implements FileReader {
 
     private LostItemDto parseItem(LineNumberReader lineReader, String itemLine) {
         try {
-            String name = itemLine.substring("ItemName:".length()).trim();
+            String name = extractField(itemLine, ITEM_NAME_PREFIX);
             String quantityLine = lineReader.readLine();
             String placeLine = lineReader.readLine();
 
@@ -77,17 +89,23 @@ public class PDFFileReader implements FileReader {
                 throw new InvalidPDFContentException("Incomplete item details in PDF.");
             }
 
-            int quantity = Integer.parseInt(quantityLine.substring("Quantity:".length()).trim());
-            String place = placeLine.substring("Place:".length()).trim();
+            int quantity = Integer.parseInt(extractField(quantityLine, QUANTITY_PREFIX));
+            String place = extractField(placeLine, PLACE_PREFIX);
 
             return LostItemDto.builder()
                     .name(name)
                     .quantity(quantity)
                     .place(place)
                     .build();
-        } catch (IOException | NumberFormatException | StringIndexOutOfBoundsException e) {
+        } catch (IOException | NumberFormatException e) {
             throw new InvalidPDFContentException("Invalid item format in PDF: " + e.getMessage());
         }
     }
 
+    private String extractField(String line, String prefix) {
+        if (line.startsWith(prefix)) {
+            return line.substring(prefix.length()).trim();
+        }
+        throw new InvalidPDFContentException("Invalid format, missing prefix: " + prefix);
+    }
 }
